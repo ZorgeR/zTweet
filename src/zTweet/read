@@ -1,0 +1,136 @@
+#!/bin/sh
+
+# zTweet - by Zorge.R - Motofan.ru
+# plese don't modify code.
+
+
+
+mkdir $tweetpath/tmp
+
+# update curent follow
+follow=`cat $tweetpath/followuser`
+
+# качаем главную страницу того за кем фоловим
+if [ ! -f $tweetpath/tmp/follow.page ]
+then
+$zt_wget -O "$tweetpath/tmp/follow.page" "http://twitter.com/$follow"
+fi
+# создаем список твитов и чистим вывод от мусора.
+if [ ! -f $tweetpath/tmp/tweet.list ]
+then
+grep '^                  <span class="entry-content">' "$tweetpath/tmp/follow.page"|
+sed 's/<span class="entry-content">//'|
+sed 's/^[ \t]*//'|
+sed 's/ &gt;//'|
+sed 's/<a href="\/search?q=[a-z:\/._0-9A-Z@=+%&?",-]*/ /g'|
+sed 's/ <a href="/. Ссылка: /'|
+sed 's/<a href="//'|
+sed 's/" class="tweet-url web" rel="nofollow" target="_blank">[a-z:\/._0-9A-Z@=+%&?",-]*/ /g'|
+sed 's/<\/a>//g'|
+sed 's/…//g'|
+sed 's/<a class="tweet-url username" href="\///g'|
+sed 's/\/search?q=[a-z:\/._0-9A-Z@=+%&?",-]*/ /g'|
+sed 's/ title=//g'|
+sed 's/" class="tweet-url hashtag" rel="nofollow">#[a-z:\/._0-9A-Z@=+%&?",-]*/ /g'|
+sed 's/" rel="nofollow">[a-z:\/._0-9A-Z@=+%&?",-]*/ /g'|
+sed 's/"//g'|
+sed 's/%23//g'|
+awk -F\</span '{print $1}' > "$tweetpath/tmp/tweet.list"
+fi
+
+# создаем список с датами
+if [ ! -f $tweetpath/tmp/tweet.time ]
+then
+grep '^    <span class="published timestamp"' "$tweetpath/tmp/follow.page"|
+awk -F\> '{print $2}'|
+awk -F\< '{print $1}' > "$tweetpath/tmp/tweet.time"
+fi
+
+
+# вывод окна выбора
+if [ ! -f $tweetpath/tmp/tweet.show ]
+then
+# определяем количество твитов
+tweetnum=`sed -n '$=' $tweetpath/tmp/tweet.list`
+# строим окно выбора твита
+num="1"
+
+echo -ne '#!/bin/sh
+	showRadio "$zt_APP_NAME" "$zt_read_list"' > $tweetpath/tmp/tweet.show
+
+while [ $num -le $tweetnum ]
+do
+# определяем ID текущей публикации
+tweet_to_show=`sed -n "$num"p"" $tweetpath/tmp/tweet.list`
+
+echo -ne " "'"'$tweet_to_show'"'"" >> $tweetpath/tmp/tweet.show
+
+let num=$num+1
+done
+
+fi
+
+. $tweetpath/tmp/tweet.show
+RADIORES=$?
+
+action()
+{
+if [ $RADIORES -eq 0 ]
+then
+	# если отмена, переходим в TOP
+	. $tweetpath/tweet
+else
+	# захват выбранного твита
+	showtweet=`sed -n $RADIORES\p $tweetpath/tmp/tweet.list`
+	# захват даты твита
+	showtime=`sed -n $RADIORES\p $tweetpath/tmp/tweet.time`
+	# выбор, открыть ссылку или прочесть
+	showRadio "$zt_APP_NAME" "$zt_mm_action" "$zt_read_read" "$zt_read_url"
+	RADIORES2=$?
+	if [ $RADIORES2 -eq 0 ]
+	then
+		# если отмена, переходим в список твитов
+		. $tweetpath/read
+	elif [ $RADIORES2 -eq 1 ]
+	then
+	# выводим текст твита на экран.
+	showQ "$zt_APP_NAME" "=====
+$zt_read_author: $follow
+$zt_read_time: $showtime
+=====
+$showtweet
+=====" 2
+action
+	else
+url=`echo $showtweet | awk -F\Ссылка:\  '{print $2}' | awk -F\  '{print $1}'`
+if [ "$url" != 0 ] && [ "$url" != "" ]
+then
+urlname=`echo $url | sed 's/http:\/\///'`
+echo -ne "BEGIN:VBKM
+VERSION:1.0
+TITLE;CHARSET=UTF-8:"$urlname"
+URL:"$url"
+BEGIN:ENV
+X-IRMC-URL;ENCODING=QUOTED-PRINTABLE:=
+[InternetShortcut]=
+URL="$url"
+END:ENV
+END:VBKM
+" > "$tweetpath/tmp/go.to"
+
+sed "s/$/`echo -e \\\r`/" "$tweetpath/tmp/go.to" > "$tweetpath/tmp/goto.url"
+rm "$tweetpath/tmp/go.to"
+$browser -d "$tweetpath/tmp/goto.url"
+rm "$tweetpath/tmp/goto.url"
+	action
+else
+	showQ "$zt_ERR" "$zt_read_url_err" 2
+	action
+fi
+
+	fi
+fi
+}
+
+action
+

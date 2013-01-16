@@ -1,0 +1,71 @@
+
+##
+# ЯЗЫКОВОЙ ФАЙЛ ДЛЯ zTweet
+##
+
+##
+# ЯЗЫК - УКРАИНСКИЙ
+##
+
+##
+# Основные переменные
+##
+zt_APP_NAME="zTweet"
+zt_cp_motofan="           motofan.ru"
+zt_ERR="ОШИБКА"
+
+##
+# Главное меню
+##
+zt_mm_action="Выберите действие"
+zt_mm_read_new="Прочесть новые твиты"
+zt_mm_read_cach="Прочесть из кеша"
+zt_mm_follow="Следить за ..."
+zt_mm_update="Проверить обновление"
+zt_mm_gprs="GPRS режим"
+
+##
+# GPRS
+##
+zt_gprs_oops="Ой..."
+zt_gprs_err_txt="Нет доступного GPRS модуля для вашей модели телефона."
+
+##
+# Follow BLOCK
+##
+zt_flw_curent="Следим за"
+zt_flw_change="Изменить"
+zt_flw_enter="Введите имя аккаунта, чьи твиты хотите читать ( например MotofanRU )"
+zt_flw_new="Теперь будем следить за"
+
+##
+# Read BLOCK
+##
+zt_read_list="Список tweet'ов"
+zt_read_read="Прочесть полностью"
+zt_read_url="Открыть ссылку"
+zt_read_author="tweet от"
+zt_read_time="время"
+zt_read_url_err="Ссылок не найдено."
+
+##
+# Update BLOCK
+##
+zt_upd_check="Проверяю наличие обновлений..."
+zt_upd_found="Найдено обновление до версии"
+zt_upd_start="Обновление начнется немедленно."
+zt_UPD_undneed="Обновлений для версии"
+zt_UPD_undneed2="Не найдено."
+
+##
+# MD5 BLOCK
+##
+zt_upd_MD5="Проверка MD5sum..."
+zt_upd_MD5_FAIL="Проверка MD5sum провалена. Обновление невозможно."
+zt_upd_MD5_FINISH="Проверка MD5sum пройдена успешно. Начинаю обновление..."
+zt_upd_MD5_inet_err="Невозможно получить md5sum. Проверьте интернет соединение."
+
+##
+# КОНЕЦ
+##
+

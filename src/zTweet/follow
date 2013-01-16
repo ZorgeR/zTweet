@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# zTweet - by Zorge.R - Motofan.ru
+# plese don't modify code.
+
+
+follow=`cat $tweetpath/followuser`
+
+showRadio "$zt_APP_NAME" "$zt_flw_curent:
+$follow" "$zt_flw_change"
+
+ret=$?
+[ $ret -eq 0 ] && . $tweetpath/tweet
+
+case $ret in
+	1)	
+		if [ $ph_model = E2 ]
+		then
+			newfollow=`showTextEntry 0 "$zt_APP_NAME" "$zt_flw_enter:"`
+			echo "$rz_newserv" > "$tweetpath/followuser"
+		else
+			newfollow=`showTextEntry "$tweetpath/followuser" "$zt_APP_NAME" "$zt_flw_enter:" 0`
+		fi
+
+		newfollow_txt=`cat $tweetpath/followuser`
+		showQ "$zt_APP_NAME" "$zt_flw_new - $newfollow_txt" 2
+		;;
+	*)
+		;;
+esac
+
+. $tweetpath/tweet
+

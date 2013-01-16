@@ -1,0 +1,139 @@
+#!/bin/sh
+
+# zTweet - by Zorge.R - Motofan.ru
+# plese don't modify code.
+
+####################
+# Path block start #
+####################
+#--|root
+	tweetpath=${0%/*}
+#--|lang
+	zt_lng=$tweetpath/lang
+##################
+# Path block end #
+##################
+
+####################
+# Lang block start #
+####################
+#--|local upd
+LANGSTR=`grep '^LanguageType = ' /ezx_user/download/appwrite/setup/ezx_system.cfg | sed 's,^LanguageType = ,,'`
+if [ "$LANGSTR" = "" ]
+then
+	LANGSTR="en-us"
+fi
+#--|upd lng file
+if [ ! -f "${zt_lng}/zt_${LANGSTR}.txt" ]
+then
+	. "${zt_lng}/zt_en-gb.txt"
+else
+	. "${zt_lng}/zt_${LANGSTR}.txt"
+fi
+##################
+# Lang block end #
+##################
+
+# Исправляем путь для нетконфиг
+if [ ! -f "$tweetpath/netexec.fxd" ]
+then
+	# удаляем старый netexec.ini
+	rm $tweetpath/netexec.ini
+
+	# создаем новый конфиг для netexec
+	echo -ne "[NetExecConfig]
+Command = $tweetpath/tweet" > $tweetpath/netexec.ini
+	
+	# тач
+	touch $tweetpath/netexec.fxd
+fi
+# Исправляем путь для нетконфиг
+
+# browser
+browser="/usr/SYSqtapp/ljbrowser/browser"
+# browser
+
+# get phone model
+ph_model=`cat /etc/modelnum.txt`
+# get phone model
+
+# wget
+zt_wget="/bin/busybox wget"
+# wget
+
+# get zt_vers
+zt_vers=`cat $tweetpath/ztweet.vers`
+# get zt_vers
+
+ifgprsON()
+{
+
+showRadio "$zt_APP_NAME" "$zt_cp_motofan - r$zt_vers
+$zt_mm_action:" "$zt_mm_read_new" "$zt_mm_read_cach" "$zt_mm_follow" "$zt_mm_update"
+
+
+ret=$?
+[ $ret -eq 0 ] && exit
+
+case $ret in
+	1)
+		rm $tweetpath/tmp -r
+		. $tweetpath/read
+		;;
+	2)
+		. $tweetpath/read
+		;;
+	3)
+		. $tweetpath/follow
+		;;
+	4)
+		. $tweetpath/update
+		;;
+	*)
+		;;
+esac
+}
+
+ifgprsOFF()
+{
+
+showRadio "$zt_APP_NAME" "$zt_cp_motofan - r$zt_vers
+$zt_mm_action:" "$zt_mm_read_new" "$zt_mm_read_cach" "$zt_mm_follow" "$zt_mm_update" "$zt_mm_gprs"
+
+
+ret=$?
+[ $ret -eq 0 ] && exit
+
+case $ret in
+	1)
+		rm $tweetpath/tmp -r
+		. $tweetpath/read
+		;;
+	2)
+		. $tweetpath/read
+		;;
+	3)
+		. $tweetpath/follow
+		;;
+	4)
+		. $tweetpath/update
+		;;
+	5)
+		if [ "$ph_model" = "EM30" ];then ph_model=E8;fi
+		if [ -f "$tweetpath/netexec.$ph_model" ];then $tweetpath/netexec.$ph_model;else showQ "$zt_gprs_oops" "$zt_gprs_err_txt" 2; . $tweetpath/tweet;fi
+		;;
+	*)
+		;;
+esac
+}
+
+# проверяем, активен ли GPRS mode
+checkNETexec=`pidof netexec.$ph_model`
+
+if [ "$checkNETexec" != 0 ] && [ "$checkNETexec" != "" ]
+then
+	ifgprsON
+else
+	ifgprsOFF
+fi
+

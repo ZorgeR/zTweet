@@ -1,0 +1,53 @@
+#!/bin/sh
+
+#
+# Z-Mod E8
+#
+# Please don't modify this code.
+#
+# Copyright - Zorge.R - 2010 - motofan.ru
+#
+
+showNotify "$zt_APP_NAME" "$zt_upd_check" 1 3
+mkdir -p $tweetpath/upd/zTweet
+$zt_wget -O "$tweetpath/upd/zTweet/next.ver" http://rep.motofan.ru/unix/app/zTweet/next.ver
+
+zt_nextvers=`cat $tweetpath/upd/zTweet/next.ver`
+
+if [ $zt_nextvers -gt $zt_vers ]
+then
+	showNotify "$zt_APP_NAME" "$zt_upd_found - r$zt_nextvers. $zt_upd_start" 1 5
+	$zt_wget -O $tweetpath/upd/zTweet/zTweet_r$zt_nextvers.upd http://rep.motofan.ru/unix/app/zTweet/zTweet_r$zt_nextvers.upd
+	$zt_wget -O $tweetpath/upd/zTweet/zTweet_r$zt_nextvers.md5sum http://rep.motofan.ru/unix/app/zTweet/zTweet_r$zt_nextvers.md5sum
+	zt_md5sum=`cat $tweetpath/upd/zTweet/zTweet_r$zt_nextvers.md5sum`
+# MD5CHECK START
+		if [ "$zt_md5sum" != "" ]
+		then
+			showNotify "$zt_APP_NAME" "$zt_upd_MD5" 0 1
+			cd $tweetpath/upd/zTweet/
+			md5sumcheck=`md5sum ./zTweet_r$zt_nextvers.upd | sed "s/  \.\/zTweet_r$zt_nextvers.upd$//"`
+			if [ "$zt_md5sum" != "$md5sumcheck" ]
+			then
+				showQ "$zt_ERR" "$zt_upd_MD5_FAIL" 2
+				rm "$tweetpath/upd/zTweet/zTweet_r$zt_nextvers.upd"
+				rm "$tweetpath/upd/zTweet/zTweet_r$zt_nextvers.md5sum"
+			else
+				showNotify "$zt_APP_NAME" "$zt_upd_MD5_FINISH" 0 1
+				# INSTALL
+	mkdir -p /ezxlocal/download/mystuff/.tmp/zTweet
+	busybox tar -jxvf "$tweetpath/upd/zTweet/zTweet_r$zt_nextvers.upd" -C "/ezxlocal/download/mystuff/.tmp/zTweet/"
+	cp -f /ezxlocal/download/mystuff/.tmp/zTweet/zTweet/* "$tweetpath" -R
+	chmod 777 "$tweetpath" -R
+	rm -R /ezxlocal/download/mystuff/.tmp/zTweet
+				# INSTALL
+			fi
+		else
+			showQ "$zt_ERR" "$zt_upd_MD5_inet_err" 2
+		fi
+# MD5CHECK END
+else
+	showQ "$zt_APP_NAME" "$zt_UPD_undneed - r$zt_vers $zt_UPD_undneed2" 2
+fi
+
+$tweetpath/tweet
+
